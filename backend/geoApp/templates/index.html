@@ -75,3 +75,21 @@
 <script src="{% static './data/test.js' %}"></script>
 <script src="{% static './dist/main.js' %}"></script>
 <script src="{% static './dist/web-GIS.js' %}"></script>
+
+<script>
+    {% for s in shp %}
+    var {{ s.name }} = L.tileLayer.wmd('http://localhost:8080/wms {
+            layers: '{{s.name}}',
+        })
+
+
+    {% endfor %}
+
+    var overlayMaps = {
+        'GeoJSON Markers': marker,
+        'Single Marker': singleMarker
+    }
+
+    L.control.layers(baseMaps, overlayMaps, { collapsed: false, position: 'topleft' }).addTo(map);
+
+</script>
