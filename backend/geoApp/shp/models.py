@@ -14,7 +14,7 @@ from pg.pg import Pg
 # initialize the library
 db = Pg(dbname='geoapp', user='postgres',
         password='1234', host='localhost', port='5432')
-geo = Geoserver('http://localhost:8080/geoserver',
+geo = Geoserver('http://127.0.0.1:8080/geoserver/',
                 username='admin', password='geoserver')
 
 conn_str = 'postgresql://postgres:1234@localhost:5432/geoapp'
