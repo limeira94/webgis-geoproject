@@ -29,6 +29,15 @@ class Shp(models.Model):
     def __str__(self):
         return self.name
 
+class Tiff(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.CharField(max_length=1000, blank=True)
+    file = models.FileField(upload_to='%Y/%m/%d/')
+    uploaded_date = models.DateField(default=datetime.date.today, blank=True)
+    
+    def __str__(self):
+        return self.name
+
 
 @receiver(post_save, sender=Shp)
 def publish_data(sender, instance, created, **kwargs):
@@ -66,6 +75,7 @@ def publish_data(sender, instance, created, **kwargs):
         instance.delete()
         print("There is problem during shp upload: ", e)
 
+    # create workspace in geoserver 'geoapp' 
     geo.create_featurestore(store_name='geoApp', workspace='geoapp', db='geoapp',
                             host='localhost', pg_user='postgres', pg_password='1234', schema='data')
     geo.publish_featurestore(
@@ -73,8 +83,21 @@ def publish_data(sender, instance, created, **kwargs):
 
     geo.create_outline_featurestyle('geoApp_shp', workspace='geoapp')
 
-    geo.publish_style(
-        layer_name=name, style_name='geoApp_shp', workspace='geoapp')
+    geo.publish_style(layer_name=name, style_name='geoApp_shp', workspace='geoapp')
+
+
+@receiver(post_save, sender=Tiff)
+def publish_tiff(sender, instance, created, **kwargs):
+    file = instance.file.path
+    file_format = os.path.basename(file).split('.')[-1]
+    file_name = os.path.basename(file).split('.')[0]
+    file_path = os.path.dirname(file)
+    name = instance.name
+    
+    geo.create_coveragestore(file, workspace='geoapp', layer_name=name)
+    geo.create_coveragestyle(file, style_name=name, workspace='geoapp')
+    geo.publish_style(layer_name=name, style_name=name, workspace='geoapp')
+    
 
 @receiver(post_delete, sender=Shp)
 def delete_data(sender, instance, **kwargs):
